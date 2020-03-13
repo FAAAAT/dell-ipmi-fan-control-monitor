@@ -58,11 +58,12 @@ namespace JDMallen.IPMITempMonitor
 				var rollingAverageTemp = GetRollingAverageTemperature();
 
 				_logger.LogInformation(
-					"Server fan control is {operatingMode}, temp is {temp} C, rolling average temp is {rollingAverageTemp} at {time}",
+					"Server fan control is {operatingMode}, temp is {temp} C, rolling average temp is {rollingAverageTemp} at {time}. Max temp:{maxtemp}",
 					_currentMode,
 					temp,
 					rollingAverageTemp,
-					DateTimeOffset.Now);
+					DateTimeOffset.Now,
+                    _settings.MaxTempInC);
 
 				// If the temp goes above the max threshold,
 				// immediately switch to Automatic fan mode.
@@ -143,13 +144,18 @@ namespace JDMallen.IPMITempMonitor
 				await ExecuteIpmiToolCommand(
 					CheckTemperatureControlCommand,
 					cancellationToken);
-			var temp = Regex.Match(
-					result,
-					_settings.RegexToRetrieveTemp,
-					RegexOptions.Multiline)
-				.Groups.Values.Last()
-				.Value;
-			int.TryParse(temp, out var intTemp);
+            var matches = Regex.Matches(
+                result,
+                _settings.RegexToRetrieveTemp,
+                RegexOptions.Multiline);
+            var intTemp = matches.Select(x => x.Groups.Values.LastOrDefault()?.Value)
+                .Where(x=>!string.IsNullOrEmpty(x))
+                .Select(x =>
+                {
+                    if (int.TryParse(x, out var temp)) return temp;
+                    else return 0;
+                }).Max();
+
 			return intTemp;
 		}
 

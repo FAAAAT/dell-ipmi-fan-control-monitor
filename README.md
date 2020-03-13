@@ -58,13 +58,15 @@ These instructions assume you're using an Ubuntu/Debian-based system. Adjust as 
 4. Change the ownership of the folder, and all files within to dotnetuser: `sudo chown dotnetuser:dotnetuser /var/dotnet/r620-monitor && sudo chown dotnetuser:dotnetuser /var/dotnet/r620-monitor/*`
 5. Add execute bit to R620TempMonitor binary: `sudo chmod +x /var/dotnet/r620-monitor/R620TempMonitor`
 6. Create a service file here: `/etc/systemd/system/dotnet-r620-monitor.service` using your favorite text editor with elevated privileges. I used vim: `sudo vim /etc/systemd/system/dotnet-r620-monitor.service`.
-7. Paste in the below service definition. Be sure to replace "{your_iDRAC_password}", then tweak to your liking. It's critical it remain of type "notify"!
+7. Paste in the below service definition. Be sure to replace "{your_iDRAC_password}", then tweak to your liking. It's critical it remain of type "notify"! 
+
+<font color="red">(when I run this in debug mode, example: dotnet xxxx.dll, notify mode will automaticly restart the service. so i change it to exec mode.)</font>
 ```
 [Unit]
 Description=Temp monitor and fan control for R620 server
 
 [Service]
-Type=notify
+Type=exec
 ExecStart= /var/dotnet/r620-monitor/R620TempMonitor
 WorkingDirectory=/var/dotnet/r620-monitor
 User=dotnetuser
