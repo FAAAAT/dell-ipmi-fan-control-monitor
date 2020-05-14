@@ -18,4 +18,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="3.0.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Scripts\Start.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

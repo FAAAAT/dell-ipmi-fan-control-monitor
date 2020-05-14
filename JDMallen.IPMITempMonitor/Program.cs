@@ -1,3 +1,7 @@
+using System;
+using System.Linq;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -22,8 +26,11 @@ namespace JDMallen.IPMITempMonitor
 					(hostContext, services) =>
 					{
 						services.AddHostedService<Worker>();
-						services.Configure<Settings>(
-							hostContext.Configuration.GetSection("Settings"));
+                        var configuration = hostContext.Configuration.GetSection("Settings");
+#if DEBUG
+						Console.WriteLine(hostContext.Configuration.AsEnumerable().Aggregate("",(o,n)=>o+"\r\n"+n.Key+":"+n.Value));
+#endif
+						services.Configure<Settings>(configuration);
 					});
 	}
 }

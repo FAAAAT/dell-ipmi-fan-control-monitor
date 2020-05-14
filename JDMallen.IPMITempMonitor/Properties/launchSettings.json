@@ -1,7 +1,8 @@
-﻿{
+{
   "profiles": {
     "R620TempMonitor": {
       "commandName": "Project",
+      "commandLineArgs": "--Settings:IpmiPassword=axyxyyyy41",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }
