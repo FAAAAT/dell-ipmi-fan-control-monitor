@@ -98,6 +98,7 @@ namespace JDMallen.IPMITempMonitor
 					if (_currentMode == OperatingMode.Manual)
 					{
 						await Delay(cancellationToken);
+                        await SwitchToManualTempControl(cancellationToken);
 						continue;
 					}
 

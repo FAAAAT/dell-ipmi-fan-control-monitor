@@ -1,0 +1,15 @@
+stages:
+	- publish
+	default:
+    image:
+        name: "mcr.microsoft.com/dotnet/core/sdk:latest"
+
+publish:
+	stage: publish
+	script: 
+		- "cd ./JDMallen.IPMITempMonitor/"
+		- "dotnet publish -o ./publish/"
+	artifacts:
+		paths:
+			- "./JDMallen.IPMITempMonitor/publish/"
+	
