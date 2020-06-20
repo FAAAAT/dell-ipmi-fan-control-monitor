@@ -49,6 +49,7 @@ namespace JDMallen.IPMITempMonitor
 		protected override async Task ExecuteAsync(
 			CancellationToken cancellationToken)
 		{
+			_logger.LogInformation($"Notify_Socket = {Environment.GetEnvironmentVariable("NOTIFY_SOCKET")}");
 			_logger.LogInformation($"Detected OS: {_settings.Platform:G}.");
 
 			while (!cancellationToken.IsCancellationRequested)
