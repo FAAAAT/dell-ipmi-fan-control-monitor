@@ -51,6 +51,7 @@ namespace JDMallen.IPMITempMonitor
 		{
 			_logger.LogInformation($"Notify_Socket = {Environment.GetEnvironmentVariable("NOTIFY_SOCKET")}");
 			_logger.LogInformation($"Detected OS: {_settings.Platform:G}.");
+            _logger.LogInformation($"Detected OS: what the fuck.");
 
 			while (!cancellationToken.IsCancellationRequested)
 			{
@@ -108,6 +109,8 @@ namespace JDMallen.IPMITempMonitor
 
 				await Delay(cancellationToken);
 			}
+
+            _logger.LogInformation($"Exiting.");
 		}
 
 		private void PushTemperature(int temp)
@@ -226,7 +229,8 @@ namespace JDMallen.IPMITempMonitor
 				$"Executing:\r\n{ipmiPath} {args.Replace(_settings.IpmiPassword, "{password}")}");
 
 			string result;
-			if (_environment.IsDevelopment())
+			// if (_environment.IsDevelopment())
+			if(false)
 			{
 				// Your IPMI results may differ from my sample.
 				result = await File.ReadAllTextAsync(
@@ -235,6 +239,7 @@ namespace JDMallen.IPMITempMonitor
 			}
 			else
 			{
+				_logger.LogDebug("running process");
 				result = await RunProcess(ipmiPath, args, cancellationToken);
 			}
 
@@ -262,10 +267,16 @@ namespace JDMallen.IPMITempMonitor
 
 			try
 			{
+                _logger.LogDebug("process starting");
 				process.Start();
+				_logger.LogDebug("process start");
 				process.WaitForExit();
-				result = await process.StandardOutput.ReadToEndAsync();
-			}
+                _logger.LogDebug("process exit");
+				var resultTask = process.StandardOutput.ReadToEndAsync();
+				var runResult = Task.WaitAny(new Task[]{ resultTask },3000) ;
+                result = resultTask.Result;
+
+            }
 			catch (Exception ex)
 			{
 				_logger.LogCritical(ex, "Error attempting to call ipmitool!");

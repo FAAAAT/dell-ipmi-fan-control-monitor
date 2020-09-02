@@ -1,2 +1,2 @@
 #!/bin/sh
-dotnet /home/download/IPMITempMonitor/JDMallen.IPMITempMonitor.dll
+dotnet ../JDMallen.IPMITempMonitor.dll
