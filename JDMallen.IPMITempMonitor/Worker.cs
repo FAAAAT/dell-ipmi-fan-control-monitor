@@ -255,8 +255,9 @@ namespace JDMallen.IPMITempMonitor
                 await fanControlClient.ExecuteIpmiToolCommand(fanSpeedCommand, cancellationToken);
                 fanControlClient.OperatingMode = OperatingMode.Manual;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                this._logger.LogError(ex+"");
                 await StopAsync(cancellationToken);
             }
         }

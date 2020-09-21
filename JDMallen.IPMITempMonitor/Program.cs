@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Systemd;
 
 namespace JDMallen.IPMITempMonitor
 {
@@ -25,6 +27,12 @@ namespace JDMallen.IPMITempMonitor
 				.ConfigureServices(
 					(hostContext, services) =>
 					{
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        {
+                            services.AddSingleton<ISystemdNotifier, SystemdNotifier>();
+                            services.AddSingleton<IHostLifetime, SystemdLifetime>();
+						}
+
 						services.AddHostedService<Worker>();
                         var configuration = hostContext.Configuration.GetSection("Settings");
 #if DEBUG
