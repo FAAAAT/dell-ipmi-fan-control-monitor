@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>dotnet-R620TempMonitor-DA920151-D432-4985-B484-8CBFC5C6AD9D</UserSecretsId>
   </PropertyGroup>
 

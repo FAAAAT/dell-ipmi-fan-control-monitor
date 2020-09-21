@@ -51,6 +51,11 @@ namespace JDMallen.IPMITempMonitor
             this.tempClients = new Dictionary<string, TemperatureClient>();
             this._lastTenTempsCache = new Dictionary<string, List<int>>();
 
+            if (_settings.HostSettings == null)
+            {
+                throw new Exception("no config found!");
+            }
+
             foreach (var hostSetting in _settings.HostSettings)
             {
                 if (this._lastTenTempsCache.ContainsKey(hostSetting.Name))
@@ -99,69 +104,77 @@ namespace JDMallen.IPMITempMonitor
             {
                 foreach (var hostSetting in this._settings.HostSettings)
                 {
-                    if (!this._lastTenTempsCache.ContainsKey(hostSetting.Name) ||
-                        !this.tempClients.ContainsKey(hostSetting.Name) ||
-                        !this.ipmiFanControlClients.ContainsKey(hostSetting.Name))
+                    _logger.LogInformation($"Starting process {hostSetting.Name}");
+                    try
                     {
-                        this._logger.LogError($"some necessary component init failed. Name:{hostSetting.Name},Host:{hostSetting.Host}");
-                        continue;
-                    }
-
-                    var cachedTemps = this._lastTenTempsCache[hostSetting.Name];
-                    var tempClient = this.tempClients[hostSetting.Name];
-                    var fanControlClient = this.ipmiFanControlClients[hostSetting.Name];
-
-                    var temp = await tempClient.CheckLatestTemperature(cancellationToken);
-                    PushTemperature(temp, cachedTemps);
-                    var rollingAverageTemp = GetRollingAverageTemperature(cachedTemps);
-
-                    _logger.LogInformation(
-                        "Server {server} fan control is {operatingMode}, temp is {temp} C, rolling average temp is {rollingAverageTemp} at {time}. Max temp:{maxtemp}",
-                        hostSetting.Name,
-                        fanControlClient.OperatingMode,
-                        temp,
-                        rollingAverageTemp,
-                        DateTimeOffset.Now,
-                        hostSetting.MaxTempInC);
-
-                    // If the temp goes above the max threshold,
-                    // immediately switch to Automatic fan mode.
-                    if (temp > hostSetting.MaxTempInC
-                        || rollingAverageTemp > hostSetting.MaxTempInC)
-                    {
-                        _belowTemp = false;
-                        if (fanControlClient.OperatingMode == OperatingMode.Automatic)
+                        if (!this._lastTenTempsCache.ContainsKey(hostSetting.Name) ||
+                                        !this.tempClients.ContainsKey(hostSetting.Name) ||
+                                        !this.ipmiFanControlClients.ContainsKey(hostSetting.Name))
                         {
-                            await Delay(cancellationToken);
+                            this._logger.LogError($"some necessary component init failed. Name:{hostSetting.Name},Host:{hostSetting.Host}");
                             continue;
                         }
 
-                        await SwitchToAutomaticTempControl(fanControlClient, cancellationToken);
-                    }
-                    // Only switch back to manual if both the current temp
-                    // AND the rolling average are back below the set max.
-                    else
-                    {
-                        if (!_belowTemp)
+                        var cachedTemps = this._lastTenTempsCache[hostSetting.Name];
+                        var tempClient = this.tempClients[hostSetting.Name];
+                        var fanControlClient = this.ipmiFanControlClients[hostSetting.Name];
+
+                        var temp = await tempClient.CheckLatestTemperature(cancellationToken);
+                        PushTemperature(temp, cachedTemps);
+                        var rollingAverageTemp = GetRollingAverageTemperature(cachedTemps);
+
+                        _logger.LogInformation(
+                            "Server {server} fan control is {operatingMode}, temp is {temp} C, rolling average temp is {rollingAverageTemp} at {time}. Max temp:{maxtemp}",
+                            hostSetting.Name,
+                            fanControlClient.OperatingMode,
+                            temp,
+                            rollingAverageTemp,
+                            DateTimeOffset.Now,
+                            hostSetting.MaxTempInC);
+
+                        // If the temp goes above the max threshold,
+                        // immediately switch to Automatic fan mode.
+                        if (temp > hostSetting.MaxTempInC
+                            || rollingAverageTemp > hostSetting.MaxTempInC)
                         {
-                            // Record the first record of when the temp dipped
-                            // below the max temp threshold. This is an extra
-                            // safety measure to ensure that Automatic mode isn't
-                            // turned off too soon. You can see its usage in
-                            // SwitchToManualTempControl().
-                            _timeFellBelowTemp = DateTime.UtcNow;
+                            _belowTemp = false;
+                            if (fanControlClient.OperatingMode == OperatingMode.Automatic)
+                            {
+                                await Delay(cancellationToken);
+                                continue;
+                            }
+
+                            await SwitchToAutomaticTempControl(fanControlClient, cancellationToken);
                         }
-
-                        _belowTemp = true;
-
-                        if (fanControlClient.OperatingMode == OperatingMode.Manual)
+                        // Only switch back to manual if both the current temp
+                        // AND the rolling average are back below the set max.
+                        else
                         {
-                            await Delay(cancellationToken);
+                            if (!_belowTemp)
+                            {
+                                // Record the first record of when the temp dipped
+                                // below the max temp threshold. This is an extra
+                                // safety measure to ensure that Automatic mode isn't
+                                // turned off too soon. You can see its usage in
+                                // SwitchToManualTempControl().
+                                _timeFellBelowTemp = DateTime.UtcNow;
+                            }
+
+                            _belowTemp = true;
+
+                            if (fanControlClient.OperatingMode == OperatingMode.Manual)
+                            {
+                                await Delay(cancellationToken);
+                                await SwitchToManualTempControl(fanControlClient, cancellationToken);
+                                continue;
+                            }
+
                             await SwitchToManualTempControl(fanControlClient, cancellationToken);
-                            continue;
                         }
-
-                        await SwitchToManualTempControl(fanControlClient, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        this._logger.LogError(ex+"");
                     }
                 }
 
