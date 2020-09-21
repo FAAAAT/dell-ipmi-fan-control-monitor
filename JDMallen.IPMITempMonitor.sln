@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitlab-ci.yml = .gitlab-ci.yml
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IPMIFanControl", "IPMIFanControl\IPMIFanControl.csproj", "{EADF7DBA-B61B-4C5A-A38D-80032FED44EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{71604D3B-4116-4B1B-83E2-CCBE8B14F847}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71604D3B-4116-4B1B-83E2-CCBE8B14F847}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71604D3B-4116-4B1B-83E2-CCBE8B14F847}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EADF7DBA-B61B-4C5A-A38D-80032FED44EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EADF7DBA-B61B-4C5A-A38D-80032FED44EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EADF7DBA-B61B-4C5A-A38D-80032FED44EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EADF7DBA-B61B-4C5A-A38D-80032FED44EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

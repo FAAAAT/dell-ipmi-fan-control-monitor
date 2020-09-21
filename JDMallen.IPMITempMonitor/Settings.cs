@@ -1,22 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using IPMIFanControl;
 
 namespace JDMallen.IPMITempMonitor
 {
 	public class Settings
 	{
-		public string IpmiHost { get; set; }
-
-		public string IpmiUser { get; set; }
-
-		public string IpmiPassword { get; set; }
-
-		public string PathToIpmiToolIfNotDefault { get; set; }
-
-		public string RegexToRetrieveTemp { get; set; }
-
-		public int MaxTempInC { get; set; } = 50;
-
+		public HostSetting[] HostSettings { get; set; }
 		public int ManualModeFanPercentage { get; set; } = 30;
 
 		public int PollingIntervalInSeconds { get; set; } = 30;
@@ -45,9 +35,31 @@ namespace JDMallen.IPMITempMonitor
 		}
 	}
 
-	public enum Platform
+	public class HostSetting
 	{
-		Linux,
-		Windows
+		public string Name { get; set; }
+		#region IPMI
+		public string Host { get; set; }
+
+		public string User { get; set; }
+
+		public string Password { get; set; }
+		#endregion
+
+		#region lm_sensors
+
+        public string LMHost { get; set; } = string.Empty;
+        public string LMUser { get; set; } = string.Empty;
+        public string LMPassword { get; set; } = string.Empty;
+        #endregion
+
+		public string Type { get; set; }
+
+        public string PathToIpmiToolIfNotDefault { get; set; }
+
+		public string RegexToRetrieveTemp { get; set; }
+
+		public int MaxTempInC { get; set; } = 50;
+
 	}
 }
