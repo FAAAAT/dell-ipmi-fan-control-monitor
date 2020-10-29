@@ -68,6 +68,7 @@ namespace IPMIFanControl
         public Regex retrieveTempRegex;
         public ILogger logger;
         private SshClient client;
+        private bool Available;
 
         public TemperatureLMSensorsClient(string host,string user,string password,string tempRegex,ILogger logger)
         {
@@ -78,22 +79,43 @@ namespace IPMIFanControl
             this.logger = logger;
             this.client = new SshClient(host,user,password);
             this.client.Connect();
+            this.Available = true;
         }
 
         public override async Task<int> CheckLatestTemperature(CancellationToken cancellationToken)
         {
-            using (var command = client.RunCommand("sensors"))
+            if (!Available)
             {
-                //(?<=Core.\d+:\W*\+)\d*\.\d+
-                if (command.ExitStatus == 0)
+                this.client = new SshClient(this.Host, this.User, this.Password);
+                client.Connect();
+                Available = true;
+            }
+
+            try
+            {
+                using (var command = client.RunCommand("sensors"))
                 {
-                    var temps = this.retrieveTempRegex.Matches(command.Result).Select(x => float.Parse(x.Value));
-                    return (int)temps.Max();
+                    //(?<=Core.\d+:\W*\+)\d*\.\d+
+                    if (command.ExitStatus == 0)
+                    {
+                        var temps = this.retrieveTempRegex.Matches(command.Result).Select(x => float.Parse(x.Value));
+                        return (int) temps.Max();
+                    }
+                    else
+                    {
+                        throw new Exception(command.Error);
+                    }
                 }
-                else
-                {
-                    throw new Exception(command.Error);
-                }
+            }
+            catch (Exception)
+            {
+                Available = false;
+                throw;
+            }
+            finally
+            {
+                client.Disconnect();
+                client.Dispose();
             }
         }
 
